@@ -1,0 +1,1 @@
+PATH_TO_CLASSES = "/home/ivan/Downloads/ss_DeepGA/radiografias_dxs_pulpares"
