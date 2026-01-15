@@ -6,24 +6,28 @@ from DeepGA.DataReader import *
 from DeepGA.DistributedTraining import *
 from DeepGA.DeepGA import *
 
-from utils.show_layout_classes import show_split_distribution
+from ss_deepga.utils.show_layout_classes import show_split_distribution
+from ss_deepga.stratified_loaders import make_stratified_loaders_v2
+from ss_deepga.resources.constants import PATH_TO_CLASSES, CHECKPOINT_DIR, EXECUTION_ID, IMAGE_SIZE
 
-data_dir = "radiografias_dxs_pulpares/"
+import DeepGA.EncodingClass as enc
+import DeepGA.Operators as ops
 
+# Override the catalogs actually used by EncodingClass
+enc.FSIZES = [3, 5, 7, 9]
+enc.NFILTERS = [8, 16, 32, 64, 128, 256]
+enc.PSIZES = [2, 3]
+enc.PTYPE = ["max", "avg"]
+enc.NEURONS = [16, 32, 64, 128, 256]
+# Some versions of Operators rely on these names existing in that module
+ops.FSIZES = enc.FSIZES
+ops.NFILTERS = enc.NFILTERS
+ops.PSIZES = enc.PSIZES
+ops.PTYPE = enc.PTYPE
+ops.NEURONS = enc.NEURONS
 
-'''Defining DeepGA hyperparameters'''
-#Convolutional layers
-FSIZES = [3, 5, 7, 9] # Odd Sizes Are Preferred
-NFILTERS = [8, 16, 32, 64, 128, 256]
+data_dir = PATH_TO_CLASSES
 
-#Pooling layers
-PSIZES = [2,3] #[2,3,4,5]
-PTYPE = ['max', 'avg']
-
-#Fully connected layers
-NEURONS = [16, 32, 64, 128, 256] # for big layers
-
-EXECUTION_ID =708
 
 '''Defining DeepGA hyperparameters'''
 
@@ -32,21 +36,21 @@ lr = 1e-4
 
 #Maximun and minimum numbers of layers to initialize networks
 min_conv = 2 # 30
-max_conv = 30 # 60
+max_conv = 8 # 60
 min_full = 1
-max_full = 6 # 10
-max_params = 9e6
-train_epochs = 15 # Epochs to train the best individual found by the GA
+max_full = 3 # 10
+max_params = 3e6
+train_epochs = 8 # Epochs to train the best individual found by the GA
 
 '''Genetic Algorithm Parameters'''
-cr = 0.7   # Crossover rate
-mr = 0.5   # Mutation rate
-N = 25      # Population size 20 Se mantuvo en 20
-T = 35 #30      # Number of generations
+cr = 0.9   # Crossover rate
+mr = 0.6   # Mutation rate
+N = 20      # Population size 20 Se mantuvo en 20
+T = 30 #30      # Number of generations
 t_size = 5 # tournament size 5
 w = 0.1    # penalization weight   0.3
 
-chck_dir = 'point/'  # Root folder for dumping/loading pickle
+chck_dir = CHECKPOINT_DIR  # Root folder for dumping/loading pickle
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 if device.type == "cuda":
     print(f"✅ Using GPU: {torch.cuda.get_device_name(0)}")
@@ -57,20 +61,15 @@ else:
 
 train_dl, val_dl, test_dl, n_channels, n_classes, out_size, ds, train_idx, val_idx, test_idx = make_stratified_loaders_v2(
     data_dir=data_dir,
-    image_size=128,
-    batch_size=32,
+    image_size=IMAGE_SIZE,
+    batch_size=7,
     val_split=0.15,
     test_split=0.15,
     seed=42,
     num_workers=2,
 )
 
-# opcional ->>> verificar distribución
-show_split_distribution(ds, train_idx, "TRAIN")
-show_split_distribution(ds, val_idx,   "VAL")
-show_split_distribution(ds, test_idx,  "TEST")
-
-loss_func = nn.CrossEntropyLoss()
+loss_func = torch.nn.NLLLoss() # because CNN returns log_softmax
 
 execution_ID = EXECUTION_ID #Execution ID for checkpoint, change it for a new execution
 

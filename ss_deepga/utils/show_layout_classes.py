@@ -3,7 +3,7 @@ import numpy as np
 
 from ss_deepga.stratified_loaders import make_stratified_loaders_v2
 
-from constant import PATH_TO_CLASSES
+from ss_deepga.resources.constants import PATH_TO_CLASSES
 def show_split_distribution(ds, split_idx, name):
     y = np.array(ds.targets)[split_idx]
     c = Counter(y)

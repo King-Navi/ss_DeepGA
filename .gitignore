@@ -1,3 +1,10 @@
+#env
+.venv
+
+.env
+
 __pycache__/
 radiografias_dxs_pulpares/
 point/
+
+*.pkl

@@ -8,7 +8,7 @@ Created on Thu Oct 15 11:11:23 2020
 import random
 import math
 from copy import deepcopy
-#from EncodingClass import *
+from .EncodingClass import *
 
 def crossover(x, y):
     x = deepcopy(x)
